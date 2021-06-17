@@ -25,8 +25,10 @@
                     <button context="{'default_action_type': 'used'}" name="%(action_account_check_lot_action_wizard)d" type="action" string="Is use" attrs="{'invisible': ['|', ('state', '!=', 'draft'), ('type', '!=', 'issue_check')]}" help="It is used when an issue check is used to pay for an operation of the company."/>
                     <!--Operations with issue checks-->
                     <button context="{'default_action_type': 'negotiated'}" name="%(action_account_check_lot_action_wizard)d" type="action" string="Negotiated" attrs="{'invisible': ['|', '&amp;',('state', '!=', 'draft'), ('type', '=', 'issue_check'), '&amp;', ('type','=','third_check'), ('state','!=','holding')]}" help="It is used when negotiating the sale of a check with a third party."/>
-                    <button context="{'default_action_type': 'selled'}" name="%(action_account_check_lot_action_wizard)d" type="action" string="Selled" attrs="{'invisible': ['|', ('state', '!=', 'negotiated')]}" help="It is used when confirming the sale of a check with a third party."/>
+                    <button context="{'default_action_type': 'selled'}" name="%(action_account_check_lot_action_wizard)d" type="action" string="Selled" attrs="{'invisible': [('state', '!=', 'negotiated')]}" help="It is used when confirming the sale of a check with a third party."/>
                     <button context="{'default_action_type': 'deposited'}" name="%(action_account_check_lot_action_wizard)d" type="action" string="Deposited" attrs="{'invisible': ['|', '&amp;',('state', '!=', 'draft'), ('type', '=', 'issue_check'), '&amp;', ('type','=','third_check'), ('state','!=','holding')]}" help="It is used when deposited a third check."/>
+                    <button name="to_correct_operation" type="object" string="To correct" attrs="{'invisible': ['|', '&amp;',('state', 'not in', ['deposited', 'withdrawed']), ('type', '=', 'issue_check'), '&amp;', ('state','not in',['changed', 'deposited']), ('type','=','third_check')]}"
+                        help="Cancel the payment and return to the previous state." confirm="¿Seguro que desea continuar con la operación?"/>
                 </header>
             </xpath>
             <field name="bank_id" position="after">

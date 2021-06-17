@@ -19,10 +19,11 @@
 ##############################################################################
 {
     'name': 'Account Check Customization AITIC',
-    'version': "14.0.1.1.0",
+    'version': "13.0.1.3.0",
     'category': 'Accounting',
     'summary': 'Accounting, Payment, Check, Third, Issue',
     'author': 'AITIC S.A.S.',
+    'website': 'https://www.aitic.com.ar/',
     'license': 'AGPL-3',
     'images': [
     ],
@@ -43,5 +44,5 @@
     ],
     'installable': True,
     'auto_install': False,
-    'application': True,
+    'application': False,
 }

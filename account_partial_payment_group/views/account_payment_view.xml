@@ -7,8 +7,8 @@
         <field name="inherit_id" ref="account_payment_group.view_account_payment_from_group_tree"/>
         <field name="arch" type="xml">
             <field name="name" position="after">
-                <field name="date"/>
-                <field name="ref"/>
+                <field name="payment_date"/>
+                <field name="communication"/>
             </field>
         </field>
     </record>

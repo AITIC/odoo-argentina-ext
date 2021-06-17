@@ -87,12 +87,10 @@ class AccountPaymentGroup(models.Model):
 
     def remove_all(self):
         self.partial_payment_ids = False
-        self.to_pay_move_line_ids.uptate_amount_payable_aux()
         super(AccountPaymentGroup, self).remove_all()
 
     def add_all(self):
         super(AccountPaymentGroup, self).add_all()
-        self.to_pay_move_line_ids.uptate_amount_payable_aux()
         self._inverse_to_pay_move_line_ids()
 
     # Tener en cuenta o no los pagos anticipados en el pago actual.
@@ -116,7 +114,7 @@ class AccountPaymentGroup(models.Model):
             )
             amount = line.amount_residual if not line.currency_id else line.amount_residual_currency
             if new_line:
-                amount_payable = new_line.amount_payable_aux
+                amount_payable = new_line.amount_payable
                 if amount < 0 and amount_payable > amount:
                     amount = amount_payable
                 elif amount > 0 and amount_payable < amount:

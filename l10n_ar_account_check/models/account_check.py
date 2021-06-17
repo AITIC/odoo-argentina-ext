@@ -77,6 +77,14 @@ class AccountCheck(models.Model):
         store=False,
         compute_sudo=True
     )
+    partner_id = fields.Many2one(
+        'res.partner',
+        related=False,
+        compute='_compute_last_partner',
+        store=True,
+        index=True,
+        string='Last operation partner',
+    )
 
     @api.depends('operation_ids', 'operation_ids.partner_id')
     def _compute_first_partner(self):
@@ -85,8 +93,18 @@ class AccountCheck(models.Model):
                 rec.first_partner_id = False
                 rec.first_operation_id = False
                 continue
-            rec.first_partner_id = rec.operation_ids[-1].partner_id
-            rec.first_operation_id = rec.operation_ids[-1].id
+            operations = sorted(rec.operation_ids,key=lambda a: (a.date, a.id), reverse=True)
+            rec.first_partner_id = operations[-1].partner_id
+            rec.first_operation_id = operations[-1].id
+
+    @api.depends('operation_ids', 'operation_ids.partner_id', 'state')
+    def _compute_last_partner(self):
+        for rec in self:
+            if not rec.operation_ids:
+                rec.partner_id = False
+                continue
+            operations = sorted(rec.operation_ids,key=lambda a: (a.date, a.id), reverse=True)
+            rec.partner_id = operations[0].partner_id.id
 
     @api.depends(
         'operation_ids.operation',
@@ -247,6 +265,38 @@ class AccountCheck(models.Model):
                 action['domain'] = [('id', 'in', payment_ids.ids)]
                 return action
 
+    def reject(self):
+        self.ensure_one()
+        if self.state in ['deposited', 'selled', 'changed']:
+            operation = self._get_operation(self.state)
+            if operation.origin._name == 'account.payment':
+                journal = operation.origin.destination_journal_id
+            # for compatibility with migration from v8
+            elif operation.origin._name == 'account.move':
+                journal = operation.origin.journal_id
+            else:
+                raise ValidationError(_(
+                    'The deposit operation is not linked to a payment.'
+                    'If you want to reject you need to do it manually.'))
+            payment_vals = self.get_payment_values(journal)
+            payment = self.env['account.payment'].with_context(
+                default_name=_('Check "%s" rejection') % (self.name),
+                force_account_id=self.company_id._get_check_account(
+                    'rejected').id,
+            ).create(payment_vals)
+            self.post_payment_check(payment)
+            self._add_operation('rejected', payment, date=payment.payment_date)
+        elif self.state == 'delivered':
+            operation = self._get_operation(self.state, True)
+            return self.action_create_debit_note(
+                'rejected', 'supplier', operation.partner_id,
+                self.company_id._get_check_account('rejected'))
+        elif self.state == 'handed':
+            operation = self._get_operation(self.state, True)
+            return self.action_create_debit_note(
+                'rejected', 'supplier', operation.partner_id,
+                self.company_id._get_check_account('deferred'))
+
     def create_payment_deposited(self, journal, type):
         vals = self[0].get_payment_values(self[0].journal_id)
         ctx = dict(self._context)
@@ -341,7 +391,7 @@ class AccountCheck(models.Model):
                 'draft', 'deposited', 'changed', 'delivered', 'transfered'],
             'delivered': ['holding'],
             'deposited': ['holding', 'rejected', 'draft'],
-            'changed': ['holding'],
+            'changed': ['holding', 'rejected'],
             'handed': ['draft'],
             'transfered': ['holding'],
             'withdrawed': ['draft'],
@@ -538,21 +588,22 @@ class AccountCheck(models.Model):
         for rec in self:
             if rec.state in ['holding'] and rec.type == 'third_check' and payment.payment_type in ['inbound',
                                                                                                    'transfer']:
-                operation = rec._get_init_operation('holding', True)
-                if operation and operation.origin and operation.origin._name == 'account.payment':
-                    rec.with_context(no_check=True)._add_operation('draft', payment, operation.partner_id, date=operation.date)
+                operation = rec._get_operation(rec.state, False)
+                operation_holding = rec._get_init_operation('holding', True)
+                if operation_holding and operation_holding.origin and operation_holding.origin._name == 'account.payment':
+                    rec.with_context(no_check=True)._add_operation('draft', payment, operation_holding.partner_id, date=operation.date)
                 if payment.payment_method_code == 'delivered_third_check' and payment.payment_type == 'transfer':
                     inbound_method = (payment.destination_journal_id.inbound_payment_method_ids)
                     if len(inbound_method) == 1 and (
                             inbound_method.code == 'received_third_check'):
-                        rec.journal_id = operation.origin.journal_id.id
+                        rec.journal_id = operation_holding.origin.journal_id.id
 
             elif rec.state in ['changed', 'deposited'] and rec.type == 'third_check' and payment.payment_type in ['transfer']:
                 operation = rec._get_operation(rec.state, False)
                 if operation and operation.origin and operation.origin._name == 'account.payment':
-                    operation = rec._get_init_operation('holding', True)
-                    payment_link = operation.origin if operation.origin._name == 'account.payment' else payment
-                    rec.with_context(no_check=True)._add_operation('holding', payment_link, operation.partner_id, date=operation.date)
+                    operation_holding = rec._get_init_operation('holding', True)
+                    payment_link = operation_holding.origin if operation_holding.origin._name == 'account.payment' else payment
+                    rec.with_context(no_check=True)._add_operation('holding', payment_link, operation_holding.partner_id, date=operation.date)
 
             elif rec.state in ['delivered'] and rec.type == 'third_check' and payment.payment_type == 'outbound':
                 operation = rec._get_operation('delivered', True)
@@ -612,18 +663,18 @@ class AccountCheck(models.Model):
                                           'You will need to do it manually.') % (operation, op.id))
         return op
 
-    def bank_debit(self):
-        self.ensure_one()
-        if self.state in ['handed']:
-            payment_values = self.get_payment_values(self.journal_id)
-            payment = self.env['account.payment'].with_context(
-                default_name=_('Check "%s" debit') % (self.name),
-                force_account_id=self.company_id._get_check_account(
-                    'deferred').id,
-            ).create(payment_values)
-            self.post_payment_check(payment)
-            self.handed_reconcile(payment.move_line_ids.mapped('move_id'))
-            self._add_operation('debited', payment, date=payment.payment_date)
+    # def bank_debit(self):
+    #     self.ensure_one()
+    #     if self.state in ['handed']:
+    #         payment_values = self.get_payment_values(self.journal_id)
+    #         payment = self.env['account.payment'].with_context(
+    #             default_name=_('Check "%s" debit') % (self.name),
+    #             force_account_id=self.company_id._get_check_account(
+    #                 'deferred').id,
+    #         ).create(payment_values)
+    #         self.post_payment_check(payment)
+    #         self.handed_reconcile(payment.move_line_ids.mapped('move_id'))
+    #         self._add_operation('debited', payment, date=payment.payment_date)
 
     def bank_debit(self):
         for rec in self:
@@ -639,10 +690,14 @@ class AccountCheck(models.Model):
                 move = self.env['account.move'].create(vals)
                 rec.handed_reconcile(move)
                 move.post()
-                rec._add_operation('debited', move, date=action_date)
+                operation = self._get_operation(self.state)
+                partner_id = operation[0].partner_id if operation and operation[0].partner_id else self.partner_id
+                rec._add_operation('debited', move, partner_id, date=action_date)
 
     def get_bank_vals(self, action, journal):
         self.ensure_one()
+        operation = self._get_operation(self.state)
+        partner_id = operation[0].partner_id if operation and operation[0].partner_id else self.partner_id
         if action == 'bank_debit':
             credit_account = journal.default_debit_account_id
             debit_account = self.company_id._get_check_account('deferred')
@@ -664,6 +719,7 @@ class AccountCheck(models.Model):
             'debit': self.amount,
             'amount_currency': self.amount_company_currency * -1 if self.currency_id != self.company_currency_id else 0.0,
             'currency_id': self.currency_id.id if self.currency_id != self.company_currency_id else False,
+            'partner_id': partner_id and partner_id.id or False,
         }
         credit_line_vals = {
             'name': name,
@@ -671,11 +727,13 @@ class AccountCheck(models.Model):
             'credit': self.amount,
             'amount_currency': self.amount_company_currency * -1 if self.currency_id != self.company_currency_id else 0.0,
             'currency_id': self.currency_id.id if self.currency_id != self.company_currency_id else False,
+            'partner_id': partner_id and partner_id.id or False,
         }
         return {
             'ref': name,
             'journal_id': journal.id,
             'date': fields.Date.today(),
+            'partner_id': partner_id and partner_id.id or False,
             'line_ids': [
                 (0, False, debit_line_vals),
                 (0, False, credit_line_vals)],
@@ -719,10 +777,35 @@ class AccountCheck(models.Model):
                 else:
                     raise ValidationError(_(
                         'This operation is only allowed if the rejection of the check was from the bank.'))
+            elif op_deposited.operation == 'changed':
+                if operation.origin and operation.origin._name == 'account.payment':
+                    payment_vals = self.get_payment_values(journal)
+                    payment_vals['payment_type'] = 'inbound'
+                    payment = self.env['account.payment'].with_context(
+                        default_name=_('Check "%s" re-deposited') % (self.name),
+                        force_account_id=self.company_id._get_check_account(
+                            'rejected').id,
+                    ).create(payment_vals)
+                    self.post_payment_check(payment)
+                    self._add_operation('changed', payment, date=payment.payment_date)
+                else:
+                    raise ValidationError(_(
+                        'This operation is only allowed if the rejection of the check was from the bank.'))
             else:
                 raise ValidationError(_(
                     'This operation is only allowed if the rejection of the check was from the bank.'))
         else:
             raise ValidationError(_(
                 'This operation is only allowed if the rejection of the check was from the bank.'))
+
+    def to_correct_operation(self):
+        for rec in self:
+            operation = rec._get_operation(rec.state, False)
+            if operation and operation.origin and operation.origin._name == 'account.payment':
+                operation.origin.action_draft()
+            else:
+                raise UserError(
+                    _('You cannot correct operation %s because it is not associated with a payment.') % rec.state)
+
+
 

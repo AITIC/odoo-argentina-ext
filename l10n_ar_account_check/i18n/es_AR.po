@@ -76,6 +76,11 @@ msgstr "Importe total"
 
 #. module: l10n_ar_account_check
 #: model_terms:ir.ui.view,arch_db:l10n_ar_account_check.view_account_check_form
+msgid "Cancel the payment and return to the previous state."
+msgstr "Cancela el pago y vuelve al estado anterior."
+
+#. module: l10n_ar_account_check
+#: model_terms:ir.ui.view,arch_db:l10n_ar_account_check.view_account_check_form
 msgid "Bank Debit"
 msgstr "Débito del Banco"
 
@@ -93,6 +98,11 @@ msgstr "Rechazo del Banco"
 #: model_terms:ir.ui.view,arch_db:l10n_ar_account_check.account_check_lot_action_wizard_form_view
 msgid "Cancel"
 msgstr "Cancelar"
+
+#. module: l10n_ar_account_check
+#: model_terms:ir.ui.view,arch_db:l10n_ar_account_check.view_account_check_form
+msgid "Cancel the payment and return to the previous state."
+msgstr "Cancela el pago y vuelve al estado anterior."
 
 #. module: l10n_ar_account_check
 #: code:addons/l10n_ar_account_check/models/account_payment.py:0
@@ -655,6 +665,11 @@ msgstr ""
 "* Tipo de empresa: %s\n"
 "* Método de pago: %s\n"
 "* Diario de destino: %s\n"
+
+#. module: l10n_ar_account_check
+#: model_terms:ir.ui.view,arch_db:l10n_ar_account_check.view_account_check_form
+msgid "To correct"
+msgstr "Corregir"
 
 #. module: l10n_ar_account_check
 #: code:addons/l10n_ar_account_check/models/account_payment.py:0

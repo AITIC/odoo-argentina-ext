@@ -21,7 +21,6 @@
             <field name="amount_currency" groups="base.group_multi_currency" readonly="1"/>
             <field name="amount_payable" context="{'payment_group_id': parent.id}"/>
             <field name="amount_payable_company" readonly="1" force_save="1" context="{'payment_group_id': parent.id}" sum="Total Payable"/>
-            <field name="amount_payable_aux" readonly="1" force_save="1" context="{'payment_group_id': parent.id}"/>
             <field name="amount_residual" sum="Total"/>
             <field name="amount_residual_currency" groups="base.group_multi_currency"/>
             <field name="currency_id" invisible="1"/>
