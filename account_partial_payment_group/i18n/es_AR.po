@@ -1,0 +1,178 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_partial_payment_group
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 13.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-07-25 14:25+0000\n"
+"PO-Revision-Date: 2020-07-25 14:25+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: account_partial_payment_group
+#: model_terms:ir.ui.view,arch_db:account_partial_payment_group.view_account_payment_group_form
+msgid "+/- Advance Payments"
+msgstr "+/- Pagos anticipados"
+
+#. module: account_partial_payment_group
+#: model:ir.model.fields,field_description:account_partial_payment_group.field_account_partial_payment__amount
+#: model_terms:ir.ui.view,arch_db:account_partial_payment_group.view_move_line_partial_tree
+msgid "Amount"
+msgstr "Importe"
+
+#. module: account_partial_payment_group
+#: model:ir.model.fields,field_description:account_partial_payment_group.field_account_move_line__amount_payable
+msgid "Amount Payable"
+msgstr "Importe a pagar"
+
+#. module: account_partial_payment_group
+#: model:ir.model.fields,field_description:account_partial_payment_group.field_account_move_line__amount_payable_company
+msgid "Amount Payable Company"
+msgstr "Importe a pagar en moneda de la Compañía"
+
+#. module: account_partial_payment_group
+#: model:ir.model.fields,help:account_partial_payment_group.field_account_partial_payment__amount
+#: model:ir.model.fields,help:account_partial_payment_group.field_account_partial_payment__amount_residual_currency
+msgid "Amount concerned by this matching"
+msgstr "Importe implicado en este emparejamiento"
+
+#. module: account_partial_payment_group
+#: model:ir.model.fields,field_description:account_partial_payment_group.field_account_partial_payment__amount_company
+msgid "Amount in Currency"
+msgstr "Importe en moneda"
+
+#. module: account_partial_payment_group
+#: model:ir.model.fields,field_description:account_partial_payment_group.field_account_partial_payment__amount_residual
+msgid "Amount residual"
+msgstr "Importe residual"
+
+#. module: account_partial_payment_group
+#: model:ir.model.fields,field_description:account_partial_payment_group.field_account_partial_payment__amount_residual_currency
+msgid "Amount residual currency"
+msgstr "Importe residual en modena"
+
+#. module: account_partial_payment_group
+#: model:ir.model.fields,field_description:account_partial_payment_group.field_account_partial_payment__company_id
+msgid "Company"
+msgstr "Compañía"
+
+#. module: account_partial_payment_group
+#: model:ir.model.fields,field_description:account_partial_payment_group.field_account_partial_payment__company_currency_id
+msgid "Company Currency"
+msgstr "Moneda compañía"
+
+#. module: account_partial_payment_group
+#: model:ir.model.fields,field_description:account_partial_payment_group.field_account_partial_payment__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: account_partial_payment_group
+#: model:ir.model.fields,field_description:account_partial_payment_group.field_account_partial_payment__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: account_partial_payment_group
+#: model:ir.model.fields,field_description:account_partial_payment_group.field_account_partial_payment__currency_id
+msgid "Currency"
+msgstr "Moneda"
+
+#. module: account_partial_payment_group
+#: model:ir.model.fields,field_description:account_partial_payment_group.field_account_partial_payment__display_name
+msgid "Display Name"
+msgstr "Nombre mostrado"
+
+#. module: account_partial_payment_group
+#: model:ir.model.fields,field_description:account_partial_payment_group.field_account_partial_payment__id
+msgid "ID"
+msgstr "ID"
+
+#. module: account_partial_payment_group
+#: model:ir.model,name:account_partial_payment_group.model_account_move_line
+msgid "Journal Item"
+msgstr "Apunte contable"
+
+#. module: account_partial_payment_group
+#: model_terms:ir.ui.view,arch_db:account_partial_payment_group.view_account_partial_payment_tree
+#: model_terms:ir.ui.view,arch_db:account_partial_payment_group.view_move_line_partial_tree
+msgid "Journal Items"
+msgstr "Apuntes contables"
+
+#. module: account_partial_payment_group
+#: model:ir.model.fields,field_description:account_partial_payment_group.field_account_partial_payment____last_update
+msgid "Last Modified on"
+msgstr "Última modificación en"
+
+#. module: account_partial_payment_group
+#: model:ir.model.fields,field_description:account_partial_payment_group.field_account_partial_payment__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: account_partial_payment_group
+#: model:ir.model.fields,field_description:account_partial_payment_group.field_account_partial_payment__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: account_partial_payment_group
+#: model:ir.model.fields,field_description:account_partial_payment_group.field_account_partial_payment__line_move_id
+msgid "Line Move"
+msgstr "Línea de Movimiento"
+
+#. module: account_partial_payment_group
+#: model:ir.model,name:account_partial_payment_group.model_account_partial_payment
+msgid "Partial Payment"
+msgstr "Pago parcial"
+
+#. module: account_partial_payment_group
+#: model:ir.model.fields,field_description:account_partial_payment_group.field_account_payment_group__partial_payment_ids
+msgid "Partial Payment Lines"
+msgstr "Líneas de pago parcial"
+
+#. module: account_partial_payment_group
+#: model_terms:ir.ui.view,arch_db:account_partial_payment_group.view_account_payment_group_form
+msgid "Partial payment"
+msgstr "Pago parcial"
+
+#. module: account_partial_payment_group
+#: model:ir.model,name:account_partial_payment_group.model_account_payment_group
+#: model:ir.model.fields,field_description:account_partial_payment_group.field_account_partial_payment__payment_group_id
+msgid "Payment Group"
+msgstr "Grupo de Pago"
+
+#. module: account_partial_payment_group
+#: code:addons/account_partial_payment_group/models/account_move_line.py:0
+#, python-format
+msgid "The amount to be paid must not be greater than the residual amount"
+msgstr "El importe a pagar no debe ser superior al importe residual."
+
+#. module: account_partial_payment_group
+#: code:addons/account_partial_payment_group/models/account_payment_group.py:0
+#, python-format
+msgid "To Pay Amount and Payment Amount must be equal!"
+msgstr "¡El Importe a pagar y el Importe de Pago deben ser iguales!"
+
+#. module: account_partial_payment_group
+#: model_terms:ir.ui.view,arch_db:account_partial_payment_group.view_move_line_partial_tree
+msgid "Total"
+msgstr "Total"
+
+#. module: account_partial_payment_group
+#: model_terms:ir.ui.view,arch_db:account_partial_payment_group.view_move_line_partial_tree
+msgid "Total Payable"
+msgstr "Total a pagar"
+
+#. module: account_partial_payment_group
+#: model:ir.model.fields,help:account_partial_payment_group.field_account_partial_payment__company_currency_id
+msgid "Utility field to express amount currency"
+msgstr "Campo útil para expresar importe en divisa."
+
+#. module: account_partial_payment_group
+#: code:addons/account_partial_payment_group/models/account_payment_group.py:0
+#, python-format
+msgid "You can not confirm a payment group without payment lines!"
+msgstr "¡No puede confirmar un grupo de pagos sin líneas de pago!"

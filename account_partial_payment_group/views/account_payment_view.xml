@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <record id="view_account_payment_from_group_tree" model="ir.ui.view">
+        <field name="name">account.payment.tree</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account_payment_group.view_account_payment_from_group_tree"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="date"/>
+                <field name="ref"/>
+            </field>
+        </field>
+    </record>
+</odoo>

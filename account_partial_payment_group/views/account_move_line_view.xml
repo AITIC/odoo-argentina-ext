@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<!-- Journal Items -->
+<record id="view_move_line_partial_tree" model="ir.ui.view">
+    <field name="name">account.move.line.partial.tree</field>
+    <field name="model">account.move.line</field>
+    <field eval="99" name="priority"/>
+    <field name="arch" type="xml">
+        <tree string="Journal Items" edit="0" create="0" editable="bottom">
+            <field name="date"/>
+            <field name="date_maturity" readonly="1"/>
+            <field name="move_id" required="0"/>
+            <field name="journal_id" options='{"no_open":True}'/>
+            <field name="name" readonly="1"/>
+            <field name="ref" readonly="1"/>
+            <field name="statement_id" invisible="1"/>
+            <field name="account_id" options='{"no_open":True}'
+                   domain="[('company_id', '=', company_id)]" readonly="1"/>
+            <field name="balance" string="Amount"/>
+            <field name="amount_currency" groups="base.group_multi_currency" readonly="1"/>
+            <field name="amount_payable" context="{'payment_group_id': parent.id}"/>
+            <field name="amount_payable_company" readonly="1" force_save="1" context="{'payment_group_id': parent.id}" sum="Total Payable"/>
+            <field name="amount_payable_aux" readonly="1" force_save="1" context="{'payment_group_id': parent.id}"/>
+            <field name="amount_residual" sum="Total"/>
+            <field name="amount_residual_currency" groups="base.group_multi_currency"/>
+            <field name="currency_id" invisible="1"/>
+            <field name="company_currency_id" invisible="1"/>
+            <field name="company_id" invisible="1"/>
+        </tree>
+    </field>
+</record>
+
+<!--<record id="view_move_line_with_matched_tree" model="ir.ui.view">-->
+<!--    <field name="name">account.move.line.tree</field>-->
+<!--    <field name="model">account.move.line</field>-->
+<!--    <field name="inherit_id" ref="account_partial_payment_group.view_move_line_with_matched_tree"/>-->
+<!--    <field name="arch" type="xml">-->
+<!--        <field name="amount_payable" position="replace"/>-->
+<!--    </field>-->
+<!--</record>-->
+
+</odoo>

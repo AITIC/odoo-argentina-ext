@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.inherit</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account_check.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <div id="account_check" position="after">
+                <div class="row mt16">
+                    <label for="sale_check_account_id" class="col-md-3 o_light_label"/>
+                    <field name="sale_check_account_id"/>
+                </div>
+            </div>
+        </field>
+    </record>
+</odoo>

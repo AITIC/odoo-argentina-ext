@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<!--  Checks -->
+    <record id="view_account_check_form" model="ir.ui.view">
+        <field name="name">account.check.form</field>
+        <field name="model">account.check</field>
+        <field name="inherit_id" ref="account_check.view_account_check_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="replace">
+                <header>
+                    <!-- usamos la accion en vez del metodo directamente para pedir una fecha -->
+                    <button context="{'default_action_type': 'claim'}" name="%(account_check.action_account_check_action_wizard)d" type="action" string="Claim to Customer" attrs="{'invisible': ['|', ('state', '!=', 'rejected'), ('type', '!=', 'third_check')]}" help="It will create a draft debit note to customer and change check state"/>
+                    <button context="{'default_action_type': 'customer_return'}" name="%(account_check.action_account_check_action_wizard)d" type="action" string="Return to Customer" attrs="{'invisible': ['|', ('state', '!=', 'holding'), ('type', '!=', 'third_check')]}" help="It will create a draft debit note to customer and change check state"/>
+                    <!-- por ahora no permitimos debito si el cheque es corriente, lo que se hace es conciliar desde el banco solamente, si lo implementamos deberiamos implementar tmb que si el extracto lo hace entonces genere el debito, lo podemos hacer chequeando si se pasa el payment a conciliado o desde el extracto -->
+                    <!-- al final hicimos debito directo para cheques corrientes, porque si no en el dashboard nos quedaba mal tambien, como cheques entregados -->
+                    <button context="{'default_action_type': 'bank_debit'}" name="%(account_check.action_account_check_action_wizard)d" type="action" string="Bank Debit" attrs="{'invisible': ['|', ('state', 'not in', ['handed', 'selled']), ('type', '!=', 'issue_check')]}"  help="It will create a journal entry from Deferred Check Account to bank account and change check state"/>
+                    <!-- rejections -->
+                    <button context="{'default_action_type': 'reject'}" name="%(account_check.action_account_check_action_wizard)d" type="action" string="Supplier Return/Rejection" states="handed" help="It will create a draft debit note from supplier and change check state"/>
+                    <button context="{'default_action_type': 'reject'}" name="%(account_check.action_account_check_action_wizard)d" type="action" string="Supplier Rejection" states="delivered" help="It will create a debit note from supplier in draft state and change check state"/>
+                    <button context="{'default_action_type': 'reject'}" name="%(account_check.action_account_check_action_wizard)d" type="action" string="Bank Rejection" states="deposited" help="It will create an account entry from bank account to company rejection account and change check state"/>
+                    <button context="{'default_action_type': 'reject'}" name="%(account_check.action_account_check_action_wizard)d" type="action" string="Changed Rejection" states="changed" help="It will create an account entry from cash account to company rejection account and change check state"/>
+                    <button context="{'default_action_type': 're_deposited'}" name="%(action_account_check_lot_action_wizard)d" type="action" string="Deposit Again" states="rejected" help="Deposit again when bank rejection was wrong"/>
+                    <!--Operations with issue checks-->
+                    <button context="{'default_action_type': 'used'}" name="%(action_account_check_lot_action_wizard)d" type="action" string="Is use" attrs="{'invisible': ['|', ('state', '!=', 'draft'), ('type', '!=', 'issue_check')]}" help="It is used when an issue check is used to pay for an operation of the company."/>
+                    <!--Operations with issue checks-->
+                    <button context="{'default_action_type': 'negotiated'}" name="%(action_account_check_lot_action_wizard)d" type="action" string="Negotiated" attrs="{'invisible': ['|', '&amp;',('state', '!=', 'draft'), ('type', '=', 'issue_check'), '&amp;', ('type','=','third_check'), ('state','!=','holding')]}" help="It is used when negotiating the sale of a check with a third party."/>
+                    <button context="{'default_action_type': 'selled'}" name="%(action_account_check_lot_action_wizard)d" type="action" string="Selled" attrs="{'invisible': ['|', ('state', '!=', 'negotiated')]}" help="It is used when confirming the sale of a check with a third party."/>
+                    <button context="{'default_action_type': 'deposited'}" name="%(action_account_check_lot_action_wizard)d" type="action" string="Deposited" attrs="{'invisible': ['|', '&amp;',('state', '!=', 'draft'), ('type', '=', 'issue_check'), '&amp;', ('type','=','third_check'), ('state','!=','holding')]}" help="It is used when deposited a third check."/>
+                </header>
+            </xpath>
+            <field name="bank_id" position="after">
+                <field name="partner_id"/>
+            </field>
+            <field name="issue_check_subtype" position="after">
+                <field name="deposited_journal_id" readonly="1" attrs="{'invisible':[('state','!=','deposited')]}"/>
+                <field name="deposited_bank_id" readonly="1" attrs="{'invisible':[('state','!=','deposited')]}"/>
+            </field>
+            <field name="issue_check_subtype" position="after">
+                <field name="not_endorsable" force_save="1" attrs="{'invisible':[('type','!=','third_check')]}"/>
+            </field>
+            <field name="payment_date" position="after">
+                <field name="deposited_date" readonly="1" attrs="{'invisible':[('state','!=','deposited')]}"/>
+            </field>
+            <field name="company_id" position="after">
+                <field name="lot_operation"/>
+                <field name="note"/>
+            </field>
+            <xpath expr="//field[@name='operation_ids']/tree/field[@name='partner_id']" position="after">
+                <field name="lot_operation"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="view_third_checks_search">
+            <field name="name">check.third.search</field>
+            <field name="model">account.check</field>
+            <field name="arch" type="xml">
+                <search string="Checks">
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="journal_id"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                    <field name="state"/>
+                    <field name="owner_name"/>
+                    <field name="owner_vat"/>
+                    <field name="payment_date"/>
+                    <field name="note"/>
+                    <separator/>
+                    <filter string="Deferred" name="check_deferred" help="Deferred" domain="[['issue_check_subtype','=','deferred']]"/>
+                    <filter string="Currents" name="check_currents" help="Currents" domain="[['issue_check_subtype','=','currents']]"/>
+                    <filter string="Electronic" name="check_electronic" help="Electronic" domain="[['issue_check_subtype','=','electronic']]"/>
+                    <filter string="Endorsable" name="check_endorsable" help="Endorsable" domain="[('not_endorsable','=',False)]"/>
+                    <filter string="Not Endorsable" name="check_not_endorsable" help="Not Endorsable" domain="[('not_endorsable','=',True)]"/>
+                    <group expand="0" string="Group By...">
+                        <filter name='groupby_issue_date' string="Issue Date"  context="{'group_by':'issue_date'}"/>
+                        <filter name='groupby_payment' string="Payment Date" context="{'group_by':'payment_date'}"/>
+                        <filter name='groupby_journal' string="Journal" context="{'group_by':'journal_id'}"/>
+                        <filter name='groupby_state' string="State" context="{'group_by':'state'}"/>
+                        <filter name='groupby_partner' string="Partner" context="{'group_by':'partner_id'}"/>
+                        <filter name='groupby_issue_check_subtype' string="Check Subtype" context="{'group_by':'issue_check_subtype'}"/>
+                        <filter name='check_endorsable_type' string="Check Endorsable Type" context="{'group_by':'not_endorsable'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+    <record model="ir.ui.view" id="view_issue_checks_search">
+        <field name="name">check.issue.search</field>
+        <field name="model">account.check</field>
+        <field name="arch" type="xml">
+            <search string="Checks">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="journal_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="state"/>
+                <field name="owner_name"/>
+                <field name="owner_vat"/>
+                <field name="payment_date"/>
+                <field name="note"/>
+                <separator/>
+                <filter string="Used" name="used_all" domain="[['state','in',['handed', 'selled','use']]]"
+                    help="Show the checks that are already used in the case of your own."/>
+                <filter string="Negotiated" name="negotiated" domain="[['state','=','negotiated']]"/>
+                <group expand="0" string="Group By...">
+                    <filter name='groupby_issue_date' string="Issue Date" context="{'group_by':'issue_date'}"/>
+                    <filter name='groupby_payment' string="Payment Date" context="{'group_by':'payment_date'}"/>
+                    <filter name='groupby_journal' string="Journal" context="{'group_by':'journal_id'}"/>
+                    <filter name='groupby_state' string="State" context="{'group_by':'state'}"/>
+                    <filter name='groupby_partner' string="Partner" context="{'group_by':'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Third Check Menu -->
+    <record model="ir.actions.act_window" id="account_check.action_third_check">
+        <field name="search_view_id" ref="view_third_checks_search"/>
+    </record>
+
+    <!-- Issued Check Menu -->
+    <record model="ir.actions.act_window" id="account_check.action_issue_check">
+        <field name="search_view_id" ref="view_issue_checks_search"/>
+    </record>
+
+</odoo>

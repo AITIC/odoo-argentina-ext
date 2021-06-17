@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- © 2016 ADHOC SA
+     License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
+
+<odoo>
+<record id="view_account_payment_group_form" model="ir.ui.view">
+    <field name="name">Payment Multi</field>
+    <field name="model">account.payment.group</field>
+    <field name="inherit_id" ref="account_payment_group.view_account_payment_group_form"/>
+    <field name="arch" type="xml">
+        <xpath expr="//page[1]" position="attributes">
+            <attribute name="attrs">{'invisible': ['|', ('payment_subtype', '!=', 'double_validation'), ('state', 'not in', ['draft', 'confirmed'])]}</attribute>
+        </xpath>
+        <xpath expr="//page[3]" position="attributes">
+            <attribute name="attrs">{'invisible': ['|', ('payment_subtype', '!=', 'simple'), ('state', '!=', 'draft')]}</attribute>
+        </xpath>
+        <xpath expr="//page[1]/field[@name='to_pay_move_line_ids']" position="attributes">
+            <attribute name="context">{'payment_group_id': id, 'tree_view_ref': 'account_partial_payment_group.view_move_line_partial_tree'}</attribute>
+        </xpath>
+        <xpath expr="//page[3]/field[@name='to_pay_move_line_ids']" position="attributes">
+            <attribute name="context">{'payment_group_id': id, 'tree_view_ref': 'account_partial_payment_group.view_move_line_partial_tree'}</attribute>
+        </xpath>
+        <xpath expr="//page[1]/button[@name='add_all']" position="attributes">
+            <attribute name="attrs">{'invisible': ['|',('pop_up', '=', True)]}</attribute>
+        </xpath>
+        <xpath expr="//page[3]/button[@name='add_all']" position="attributes">
+            <attribute name="attrs">{'invisible': ['|',('pop_up', '=', True)]}</attribute>
+        </xpath>
+        <xpath expr="//page[1]/button[@name='remove_all']" position="attributes">
+            <attribute name="attrs">{'invisible': ['|',('pop_up', '=', True)]}</attribute>
+        </xpath>
+        <xpath expr="//page[3]/button[@name='remove_all']" position="attributes">
+            <attribute name="attrs">{'invisible': ['|',('pop_up', '=', True)]}</attribute>
+        </xpath>
+        <xpath expr="//page[1]/button[@name='remove_all']" position="after">
+            <button name="update_advance_payment" string="+/- Advance Payments" states="draft" type="object"/>
+        </xpath>
+        <xpath expr="//page[3]/button[@name='remove_all']" position="after">
+            <button name="update_advance_payment" string="+/- Advance Payments" states="draft" type="object"/>
+        </xpath>
+        <notebook position="inside">
+            <page string="Partial payment" invisible="1">
+                <field name="partial_payment_ids" context="{'payment_group_id': active_id, 'tree_view_ref': 'account_partial_payment_group.view_account_partial_payment_tree'}"/>
+            </page>
+        </notebook>
+    </field>
+</record>
+
+<record id="view_account_partial_payment_tree" model="ir.ui.view">
+    <field name="name">account.partial.payment.tree</field>
+    <field name="model">account.partial.payment</field>
+    <field name="arch" type="xml">
+         <tree string="Journal Items" edit="0" editable="bottom">
+            <field name="line_move_id"/>
+            <field name="payment_group_id"/>
+            <field name="amount"/>
+            <field name="amount_company"/>
+            <field name="amount_residual"/>
+            <field name="amount_residual_currency"/>
+            <field name="currency_id"/>
+        </tree>
+    </field>
+</record>
+
+</odoo>
